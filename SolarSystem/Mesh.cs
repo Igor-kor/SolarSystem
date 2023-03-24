@@ -11,24 +11,9 @@ namespace SolarSystemSimulation
         private int ebo;
         private int vertexCount;
         private int indexCount;
-       // private Shader _shader;
 
         public void Create(float[] vertices, int[] indices)
         {
-           /* _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-            _shader.Use();
-
-            var vertexLocation = _shader.GetAttribLocation("aPosition");
-            GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
-
-            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
-           */
-            //_shader.SetInt("texture0", 0);
-            //_shader.SetInt("texture1", 1);
-
             // Generate the VAO, VBO, and EBO
             GL.GenVertexArrays(1, out vao);
             GL.GenBuffers(1, out vbo);
@@ -60,9 +45,7 @@ namespace SolarSystemSimulation
         {
             // Bind the VAO
             GL.BindVertexArray(vao);
-            //_shader.SetMatrix4("model", vao);
-            //_shader.SetMatrix4("view", camera.GetViewMatrix());
-            //_shader.SetMatrix4("projection", camera.GetProjectionMatrix());
+
             // Draw the mesh
             GL.DrawElements(BeginMode.LineStrip, indexCount, DrawElementsType.UnsignedInt, 0);
 

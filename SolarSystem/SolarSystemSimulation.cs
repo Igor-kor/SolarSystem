@@ -46,7 +46,7 @@ namespace SolarSystemSimulation
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorState = CursorState.Grabbed;
 
-            solarSystem = new SolarSystem(/*_camera*/);
+            solarSystem = new SolarSystem();
 
             _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
             _shader.Use();
@@ -71,7 +71,8 @@ namespace SolarSystemSimulation
             GL.MatrixMode(MatrixMode.Color);
             GL.LoadIdentity();
             GL.Translate(0, 0, -50);
-            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+           // var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+            var model = Matrix4.Identity;
             _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
