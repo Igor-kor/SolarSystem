@@ -20,15 +20,6 @@ namespace SolarSystemSimulation
         private double _time;
         private Shader _shader;
 
-        // float speed = 1.5f;
-        // MatrixMode matrixMode = new MatrixMode();
-        // Vector3 position = new Vector3(0.0f, 0.0f, 3.0f);
-        //  Vector3 front = new Vector3(0.0f, 0.0f, -1.0f);
-        //  Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
-        /*  Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 0.0f, 3.0f),
-                new Vector3(0.0f, 0.0f, 0.0f),
-               new Vector3(0.0f, 1.0f, 0.0f));*/
-
         public SolarSystemSimulation(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title })
         {
             
@@ -42,6 +33,7 @@ namespace SolarSystemSimulation
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
             _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+            //_camera = new Camera(new Vector3(0, 0, -50), Size.X / (float)Size.Y);
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorState = CursorState.Grabbed;
@@ -77,6 +69,7 @@ namespace SolarSystemSimulation
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
+            Console.WriteLine(_camera.GetViewMatrix().ToString());
             solarSystem.Draw();
 
             SwapBuffers();
