@@ -6,11 +6,10 @@ namespace SolarSystemSimulation
     public class SolarSystem
     {
         private List<CelestialBody> bodies;
-
         public SolarSystem()
         {
             bodies = new List<CelestialBody>();
-
+            /*_camera = camera;*/
             // добавление планет и звезд в систему
             bodies.Add(new CelestialBody(new Vector3(0, 0, 0), 5, Color.Yellow)); // солнце
             bodies.Add(new CelestialBody(new Vector3(10, 0, 0), 1, Color.Blue)); // земля
@@ -22,11 +21,11 @@ namespace SolarSystemSimulation
             bodies.Add(new CelestialBody(new Vector3(-55, 0, 0), 0.5f, Color.LightGray)); // Плутон*/
         }
 
-        public void Draw()
+        public void Draw(/*Camera camera*/)
         {
             foreach (var body in bodies)
             {
-                body.Draw();
+                body.Draw(/*camera*/);
             }
         }
     }

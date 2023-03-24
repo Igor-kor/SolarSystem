@@ -10,34 +10,71 @@ namespace SolarSystemSimulation
     public class SolarSystemSimulation : GameWindow
     {
         private SolarSystem solarSystem;
-        float speed = 1.5f;
-        MatrixMode matrixMode = new MatrixMode();
-        Vector3 position = new Vector3(0.0f, 0.0f, 3.0f);
-        Vector3 front = new Vector3(0.0f, 0.0f, -1.0f);
-        Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
-        Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 0.0f, 3.0f),
-             new Vector3(0.0f, 0.0f, 0.0f),
-             new Vector3(0.0f, 1.0f, 0.0f));
+
+        // We need an instance of the new camera class so it can manage the view and projection matrix code.
+        // We also need a boolean set to true to detect whether or not the mouse has been moved for the first time.
+        // Finally, we add the last position of the mouse so we can calculate the mouse offset easily.
+        private Camera _camera;
+        private bool _firstMove = true;
+        private Vector2 _lastPos;
+        private double _time;
+        private Shader _shader;
+
+        // float speed = 1.5f;
+        // MatrixMode matrixMode = new MatrixMode();
+        // Vector3 position = new Vector3(0.0f, 0.0f, 3.0f);
+        //  Vector3 front = new Vector3(0.0f, 0.0f, -1.0f);
+        //  Vector3 up = new Vector3(0.0f, 1.0f, 0.0f);
+        /*  Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 0.0f, 3.0f),
+                new Vector3(0.0f, 0.0f, 0.0f),
+               new Vector3(0.0f, 1.0f, 0.0f));*/
 
         public SolarSystemSimulation(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title })
         {
-            solarSystem = new SolarSystem();
-            OnLoad();
+            
         }
 
-        protected void OnLoad(EventArgs e)
+        protected override void OnLoad()
         {
-            GL.ClearColor(Color.Aqua);
+            base.OnLoad();
+
+            GL.ClearColor(Color.Brown);
+            // We initialize the camera so that it is 3 units back from where the rectangle is.
+            // We also give it the proper aspect ratio.
+            _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+
+            // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
+            CursorState = CursorState.Grabbed;
+
+            solarSystem = new SolarSystem(/*_camera*/);
+
+            _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+            _shader.Use();
+
+            var vertexLocation = _shader.GetAttribLocation("aPosition");
+            GL.EnableVertexAttribArray(vertexLocation);
+            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+
+            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
+            GL.EnableVertexAttribArray(texCoordLocation);
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
-            view = Matrix4.LookAt(position, position + front, up);
+            base.OnRenderFrame(e);
+            _time += 4.0 * e.Time;
+
+            //view = Matrix4.LookAt(position, position + front, up);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             //GL.ClearColor(Color.Aqua);
             GL.MatrixMode(MatrixMode.Color);
             GL.LoadIdentity();
             GL.Translate(0, 0, -50);
+            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+            _shader.SetMatrix4("model", model);
+            _shader.SetMatrix4("view", _camera.GetViewMatrix());
+            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
             solarSystem.Draw();
 
@@ -46,6 +83,7 @@ namespace SolarSystemSimulation
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+
             if (!IsFocused) // check to see if the window is focused
             {
                 return;
@@ -53,37 +91,77 @@ namespace SolarSystemSimulation
 
             KeyboardState input = KeyboardState;
 
-            //...
+            const float cameraSpeed = 1.5f;
+            const float sensitivity = 0.2f;
 
             if (input.IsKeyDown(Keys.W))
             {
-                position += front * speed; //Forward 
+                _camera.Position += _camera.Front * cameraSpeed * (float)e.Time; // Forward
             }
 
             if (input.IsKeyDown(Keys.S))
             {
-                position -= front * speed; //Backwards
+                _camera.Position -= _camera.Front * cameraSpeed * (float)e.Time; // Backwards
             }
-
             if (input.IsKeyDown(Keys.A))
             {
-                position -= Vector3.Normalize(Vector3.Cross(front, up)) * speed; //Left
+                _camera.Position -= _camera.Right * cameraSpeed * (float)e.Time; // Left
             }
-
             if (input.IsKeyDown(Keys.D))
             {
-                position += Vector3.Normalize(Vector3.Cross(front, up)) * speed; //Right
+                _camera.Position += _camera.Right * cameraSpeed * (float)e.Time; // Right
             }
-
             if (input.IsKeyDown(Keys.Space))
             {
-                position += up * speed; //Up 
+                _camera.Position += _camera.Up * cameraSpeed * (float)e.Time; // Up
             }
-
             if (input.IsKeyDown(Keys.LeftShift))
             {
-                position -= up * speed; //Down
+                _camera.Position -= _camera.Up * cameraSpeed * (float)e.Time; // Down
             }
+
+            if (input.IsKeyDown(Keys.Escape))
+            {
+                Close();
+            }
+
+            // Get the mouse state
+            var mouse = MouseState;
+
+            if (_firstMove) // This bool variable is initially set to true.
+            {
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+                _firstMove = false;
+            }
+            else
+            {
+                // Calculate the offset of the mouse position
+                var deltaX = mouse.X - _lastPos.X;
+                var deltaY = mouse.Y - _lastPos.Y;
+                _lastPos = new Vector2(mouse.X, mouse.Y);
+
+                // Apply the camera pitch and yaw (we clamp the pitch in the camera class)
+                _camera.Yaw += deltaX * sensitivity;
+                _camera.Pitch -= deltaY * sensitivity; // Reversed since y-coordinates range from bottom to top
+            }
+        }
+
+        // In the mouse wheel function, we manage all the zooming of the camera.
+        // This is simply done by changing the FOV of the camera.
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            _camera.Fov -= e.OffsetY;
+        }
+
+        protected override void OnResize(ResizeEventArgs e)
+        {
+            base.OnResize(e);
+
+            GL.Viewport(0, 0, Size.X, Size.Y);
+            // We need to update the aspect ratio once the window has been resized.
+            _camera.AspectRatio = Size.X / (float)Size.Y;
         }
     }
 }

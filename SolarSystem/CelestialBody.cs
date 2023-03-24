@@ -19,7 +19,7 @@ namespace SolarSystemSimulation
             mesh = Mesh.CreateSphere(Radius, 32, 32);
         }
 
-        public void Draw()
+        public void Draw(/*Camera camera*/)
         {
             GL.PushMatrix();
 
@@ -27,7 +27,7 @@ namespace SolarSystemSimulation
 
             GL.Color3(Color);
             //gluSphere(IntPtr.Zero, Radius, 32, 32);
-            mesh.Render();
+            mesh.Render(/*camera*/);
 
             GL.PopMatrix();
         }
