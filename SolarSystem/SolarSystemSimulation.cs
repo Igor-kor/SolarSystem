@@ -38,10 +38,11 @@ namespace SolarSystemSimulation
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorState = CursorState.Grabbed;
 
-            solarSystem = new SolarSystem();
+            
 
-            _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+            _shader = new Shader("Shaders/shader.vert", "Shaders/color.frag");
             _shader.Use();
+            solarSystem = new SolarSystem();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);

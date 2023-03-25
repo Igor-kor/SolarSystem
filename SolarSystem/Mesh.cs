@@ -22,8 +22,8 @@ namespace SolarSystemSimulation
 
         public Mesh()
         {
-            shaders = new Shader("Shaders/mypositiion.vert", "Shaders/color.frag");
-            shaders.Use();
+            shaders = Shader.current;
+          /*  shaders.Use();*/
         }
         //public void Create(float[] vertices, int[] indices)
         //{
@@ -80,12 +80,14 @@ namespace SolarSystemSimulation
           
             GL.EnableVertexAttribArray(positionLocation);
             GL.Uniform3(positionLocation, position);
-
+         
             int colorLocation = shaders.GetAttribLocation("Scolor");
             colorVector = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, color.A/255f);
             
             GL.EnableVertexAttribArray(colorLocation);
             GL.Uniform4(colorLocation, colorVector);
+
+
             // Unbind the VAO
             GL.BindVertexArray(0);
 
@@ -95,10 +97,11 @@ namespace SolarSystemSimulation
 
         public void Render()
         {
-            shaders.Use();
-            position = position + new Vector3(0.00f, 0.00f, 0.001f);
+           // shaders.Use();
+            //position = position + new Vector3(0.00f, 0.00f, 0.001f);
             shaders.SetVector3("position", position );
             shaders.SetVector4("Scolor", colorVector);
+            
             // Bind the VAO
             GL.BindVertexArray(vao);
             // Draw the mesh

@@ -6,6 +6,7 @@ namespace SolarSystemSimulation
     // A simple class meant to help create shaders.
     public class Shader
     {
+        public static Shader current;
         public readonly int Handle;
 
         private readonly Dictionary<string, int> _uniformLocations;
@@ -16,6 +17,7 @@ namespace SolarSystemSimulation
         // A commented example of GLSL can be found in shader.vert.
         public Shader(string vertPath, string fragPath)
         {
+            current = this;
             Console.WriteLine("Load Shader " + vertPath);
             Console.WriteLine("Load Shader " + fragPath);
             // There are several different types of shaders, but the only two you need for basic rendering are the vertex and fragment shaders.
