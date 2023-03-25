@@ -29,11 +29,11 @@ namespace SolarSystemSimulation
         {
             base.OnLoad();
 
-            GL.ClearColor(Color.Brown);
+            GL.ClearColor(Color.Black);
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
-            _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
-            //_camera = new Camera(new Vector3(0, 0, -50), Size.X / (float)Size.Y);
+            //_camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+            _camera = new Camera(new Vector3(0, 0, -200), Size.X / (float)Size.Y);
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorState = CursorState.Grabbed;
@@ -62,7 +62,7 @@ namespace SolarSystemSimulation
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.LoadIdentity();
-            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+            var model = Matrix4.Identity;
             _shader.Use();
             _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());

@@ -18,7 +18,11 @@ namespace SolarSystemSimulation
         Vector3 position;
         Color color;
         Vector4 colorVector;
+        float speed;
+        float radius;
+        float orbitradius;
         Shader shaders;
+        float iterationdegree = 0;
 
         public Mesh()
         {
@@ -97,15 +101,18 @@ namespace SolarSystemSimulation
 
         public void Render()
         {
-           // shaders.Use();
-            //position = position + new Vector3(0.00f, 0.00f, 0.001f);
+            // shaders.Use();
+            iterationdegree += speed;
+            if (iterationdegree >= 360) iterationdegree = 0;
+            position.X = 0 + (orbitradius * MathF.Cos(iterationdegree * MathF.PI / 180));
+            position.Y = 0 + (orbitradius * MathF.Sin(iterationdegree * MathF.PI / 180));
             shaders.SetVector3("position", position );
             shaders.SetVector4("Scolor", colorVector);
             
             // Bind the VAO
             GL.BindVertexArray(vao);
             // Draw the mesh
-            GL.DrawElements(BeginMode.LineStrip, indexCount, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.TriangleStripAdjacency, indexCount, DrawElementsType.UnsignedInt, 0);
             // Unbind the VAO
             GL.BindVertexArray(0);
         }
@@ -116,10 +123,13 @@ namespace SolarSystemSimulation
             GL.DeleteBuffer(vbo);
             GL.DeleteBuffer(ebo);
         }
-        public void CreateSphere(float radius, int slices, int stacks, Vector3 _position, Color _color)
+        public void CreateSphere(float _radius, int slices, int stacks, Vector3 _position, Color _color, float _speed)
         {
+            speed = _speed;
             position = _position;
             color = _color;
+            radius = _radius;
+            orbitradius = _position.X;
             for (int j = 0; j <= stacks; j++)
             {
                 float theta = j * MathF.PI / stacks; ;
