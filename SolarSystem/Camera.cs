@@ -4,6 +4,7 @@ namespace SolarSystemSimulation
 {
     public class Camera
     {
+        public static Camera camera;
         // Those vectors are directions pointing outwards from the camera to define how it rotated.
         private Vector3 _front = -Vector3.UnitZ;
 
@@ -24,6 +25,7 @@ namespace SolarSystemSimulation
         {
             Position = position;
             AspectRatio = aspectRatio;
+            camera = this;
         }
 
         // The position of the camera

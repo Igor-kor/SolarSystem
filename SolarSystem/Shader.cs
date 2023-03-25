@@ -16,6 +16,8 @@ namespace SolarSystemSimulation
         // A commented example of GLSL can be found in shader.vert.
         public Shader(string vertPath, string fragPath)
         {
+            Console.WriteLine("Load Shader " + vertPath);
+            Console.WriteLine("Load Shader " + fragPath);
             // There are several different types of shaders, but the only two you need for basic rendering are the vertex and fragment shaders.
             // The vertex shader is responsible for moving around vertices, and uploading that data to the fragment shader.
             //   The vertex shader won't be too important here, but they'll be more important later.

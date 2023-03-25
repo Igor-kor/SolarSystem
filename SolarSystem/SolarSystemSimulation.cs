@@ -44,12 +44,14 @@ namespace SolarSystemSimulation
             _shader.Use();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
-            GL.EnableVertexAttribArray(vertexLocation);
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(vertexLocation);
 
-            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
+            /*var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCoordLocation);  */
+            
+
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -57,19 +59,14 @@ namespace SolarSystemSimulation
             base.OnRenderFrame(e);
             _time += 4.0 * e.Time;
 
-            //view = Matrix4.LookAt(position, position + front, up);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            //GL.ClearColor(Color.Aqua);
-            GL.MatrixMode(MatrixMode.Color);
             GL.LoadIdentity();
-            GL.Translate(0, 0, -50);
-           // var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
-            var model = Matrix4.Identity;
+            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+            _shader.Use();
             _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
-            Console.WriteLine(_camera.GetViewMatrix().ToString());
             solarSystem.Draw();
 
             SwapBuffers();

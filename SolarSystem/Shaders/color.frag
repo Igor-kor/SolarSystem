@@ -1,10 +1,11 @@
 ﻿#version 330 core
 
-out vec4 gl_FragColor;
-
+out vec4 outputColor;
 uniform vec4 Scolor;
 
 void main()
 {
-    gl_FragColor  = Scolor;
+    outputColor = Scolor;
+   //pixelColor = Scolor;
+   //diffuseColor = Scolor;
 }

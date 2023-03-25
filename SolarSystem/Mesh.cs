@@ -18,16 +18,12 @@ namespace SolarSystemSimulation
         Vector3 position;
         Color color;
         Vector4 colorVector;
-        static Shader shaders;
+        Shader shaders;
 
         public Mesh()
         {
-            if (shaders == null)
-            {
-                shaders = new Shader("Shaders/mypositiion.vert", "Shaders/color.frag");
-                Mesh.shaders.Use();
-            }
-         
+            shaders = new Shader("Shaders/mypositiion.vert", "Shaders/color.frag");
+            shaders.Use();
         }
         //public void Create(float[] vertices, int[] indices)
         //{
@@ -69,28 +65,27 @@ namespace SolarSystemSimulation
 
             // Bind the VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
 
             // Bind the EBO
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.DynamicDraw);
 
             // Set the vertex attributes
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
 
             // Set the position uniform
-            int positionLocation = GL.GetAttribLocation(shaders.Handle,"Pposition");
+            int positionLocation = shaders.GetAttribLocation("position");
+          
             GL.EnableVertexAttribArray(positionLocation);
             GL.Uniform3(positionLocation, position);
 
-            // Set the color uniform
-            int colorLocation = GL.GetAttribLocation(shaders.Handle, "Scolor");
+            int colorLocation = shaders.GetAttribLocation("Scolor");
             colorVector = new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, color.A/255f);
+            
             GL.EnableVertexAttribArray(colorLocation);
             GL.Uniform4(colorLocation, colorVector);
-            //GL.VertexAttribPointer(colorLocation, 4, VertexAttribPointerType.Float, false, 0, 0);
-          
             // Unbind the VAO
             GL.BindVertexArray(0);
 
@@ -100,13 +95,14 @@ namespace SolarSystemSimulation
 
         public void Render()
         {
+            shaders.Use();
+            position = position + new Vector3(0.00f, 0.00f, 0.001f);
+            shaders.SetVector3("position", position );
+            shaders.SetVector4("Scolor", colorVector);
             // Bind the VAO
             GL.BindVertexArray(vao);
-            shaders.SetVector3("Pposition", position);
-            shaders.SetVector4("Scolor", colorVector);
             // Draw the mesh
-            GL.DrawElements(BeginMode.Polygon, indexCount, DrawElementsType.UnsignedInt, 0);
-
+            GL.DrawElements(BeginMode.LineStrip, indexCount, DrawElementsType.UnsignedInt, 0);
             // Unbind the VAO
             GL.BindVertexArray(0);
         }
@@ -163,44 +159,6 @@ namespace SolarSystemSimulation
 
         }
 
-        //public void setPosition(Vector3 position)
-        //{
-        //    /* for (int j = 0; j <= vertices.Count-1; j+=3)
-        //     {
-        //         for (int i = 0; i < 3; i++)
-        //         {
-        //             vertices[j+i]=vertices[j + i] + position.X;
-        //             vertices[j+i]=vertices[j + i] + position.X;
-        //             vertices[j+i]=vertices[j + i] + position.X;
-        //         }
-        //     }
-        //     Create(vertices.ToArray(), indices.ToArray());*/
-        //    GL.BindVertexArray(vao);
-
-        //    GL.EnableVertexAttribArray(0);
-        //    GL.VertexAttribFormat(0, 3, VertexAttribType.UnsignedByte, false,0);
-        //    GL.VertexAttribBinding(0, 0);
-        //    GL.EnableVertexAttribArray(1);
-        //    GL.VertexAttribFormat(1, 3, VertexAttribType.UnsignedByte, false,3);
-        //    GL.VertexAttribBinding(1, 0);
-        //    GL.EnableVertexAttribArray(2);
-        //    GL.VertexAttribFormat(2, 4, VertexAttribType.UnsignedByte, true,6);
-        //    GL.VertexAttribBinding(2, 0);
-
-        //    GL.BindVertexArray(0);
-        //}
-    }
-
-    public struct SmallBlockVertex
-    {
-        public byte PositionX;
-        public byte PositionY;
-        public byte PositionZ;
-        public byte ColorR;
-        public byte ColorG;
-        public byte ColorB;
-        public byte TextureX;
-        public byte TextureY;
     }
 }
 
