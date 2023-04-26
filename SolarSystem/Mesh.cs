@@ -7,6 +7,9 @@ using System.IO;
 using OpenTK.Graphics.OpenGL;
 using static OpenTK.Graphics.OpenGL.GL;
 using SolarSystemSimulation;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
 
 namespace SolarSystem
 {
@@ -21,6 +24,7 @@ namespace SolarSystem
         List<int> indices = new List<int>();
 
         int textureId = 0;
+        string texture;
 
         private int vao;
 
@@ -31,13 +35,16 @@ namespace SolarSystem
 
         //  private int ebo;
 
-        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices)
+        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices, string texture)
         {
             this.vertices = vertices;
             this.normals = normals;
             this.texCoords = texCoords;
             this.indices = indices;
+            this.texture = texture;
             BindParseData();
+            LoadTexture("../../../blender/" + texture);
+            BindTexture();
         }
 
         void BindParseData()
@@ -62,10 +69,13 @@ namespace SolarSystem
 
             // Создание VBO для текстурных координат
             GL.GenBuffers(1, out tbo);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, texCoords.Count * sizeof(float), texCoords.ToArray(), BufferUsageHint.StaticDraw);
-            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
-            GL.EnableVertexAttribArray(2);
+            GL.BindBuffer(BufferTarget.TextureBuffer, tbo);
+            GL.BufferData(BufferTarget.TextureBuffer, texCoords.Count * sizeof(float), texCoords.ToArray(), BufferUsageHint.StaticDraw);
+           // GL.BufferData(BufferTarget.TextureBuffer, (IntPtr)(sizeof(float) * 4), IntPtr.Zero, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.TextureBuffer, 0);
+            //  GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
+            //  GL.EnableVertexAttribArray(2);
+
 
             GL.GenBuffers(1, out ibo);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
@@ -75,7 +85,44 @@ namespace SolarSystem
             GL.BindVertexArray(0);
         }
 
-        void BindTexture()
+        public int LoadTexture(string filename)
+        {
+            Console.WriteLine("Load Texrure " + filename);
+            GL.BindVertexArray(vao);
+            using (var image = Image.Load<Rgba32>(filename))
+            {
+                var texture = GL.GenTexture();
+                GL.BindTexture(TextureTarget.Texture2D, texture);
+
+                var rowSpan = image.GetPixelRowSpan(0);
+                var width = image.Width;
+                var height = image.Height;
+
+                var data = new byte[width * height * 4];
+
+                for (var y = 0; y < height; y++)
+                {
+                    var pixelRow = System.Runtime.InteropServices.MemoryMarshal.Cast<Rgba32, byte>(rowSpan.Slice(y));
+                    var destRow = data.AsSpan().Slice(y * width * 4, width * 4);
+                    pixelRow.CopyTo(destRow);
+                }
+
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, data);
+
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapLinear);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                textureId = texture;
+                return texture;
+            }
+               // Unbind the VAO
+            GL.BindVertexArray(0);
+        }
+
+
+        public void BindTexture()
         {
             // Установка текстуры (если используется)
             GL.ActiveTexture(TextureUnit.Texture0);
@@ -92,23 +139,27 @@ namespace SolarSystem
 
             // Связывание буфера вершин с атрибутом позиции
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            /* int positionLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
-             GL.EnableVertexAttribArray(positionLocation);
-             GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.Float, false, 0, 0);*/
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-            GL.EnableVertexAttribArray(0);
+            int positionLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
+            GL.EnableVertexAttribArray(positionLocation);
+            GL.VertexAttribPointer(positionLocation, 3, VertexAttribPointerType.Float, false, 0, 0);
+            //   GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
+            //  GL.EnableVertexAttribArray(0);
             // Связывание буфера текстурных координат с атрибутом текстурных координат
-            //   GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
-            /*  GL.EnableVertexAttribArray(textureCoordLocation);
-              GL.VertexAttribPointer(textureCoordLocation, 2, VertexAttribPointerType.Float, false, 0, 0);*/
-            // Console.WriteLine(indices.Count);
+         
+            
+            GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, textureId);
+            int textureLocation = GL.GetUniformLocation(shader.Handle, "tex");
+            GL.Uniform1(textureLocation, 0);
+
+
             // Рисование модели
-            // GL.DrawElements(BeginMode.TriangleStripAdjacency, indices.Count, DrawElementsType.UnsignedInt, 0);
-            GL.DrawElements(BeginMode.Lines, indices.Count, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(BeginMode.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
 
             // Отключение атрибутов и связываний
-            /* GL.DisableVertexAttribArray(positionLocation);
-             GL.DisableVertexAttribArray(textureCoordLocation);*/
+            GL.DisableVertexAttribArray(positionLocation);
+           
             //  GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
             GL.BindVertexArray(0);

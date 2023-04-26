@@ -34,7 +34,7 @@ namespace SolarSystemSimulation
             _meshes = new List<Mesh>();
             LoadObj();
 
-            GL.ClearColor(Color.Black);
+            GL.ClearColor(System.Drawing.Color.Red);
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
             //_camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
@@ -45,7 +45,7 @@ namespace SolarSystemSimulation
 
             
 
-            _shader = new Shader("Shaders/shader.vert", "Shaders/color.frag");
+            _shader = new Shader("../../../Shaders/mypositiion.vert", "../../../Shaders/color.frag");
             _shader.Use();
             //***********************************************************************
             // Set the position uniform
@@ -54,11 +54,11 @@ namespace SolarSystemSimulation
             GL.EnableVertexAttribArray(positionLocation);
             GL.Uniform3(positionLocation, new Vector3(0,0,0));
 
-            int colorLocation = _shader.GetAttribLocation("Scolor");
-            Vector4 colorVector = new Vector4(1,1,1,1);
+          //  int colorLocation = _shader.GetAttribLocation("Scolor");
+         //   Vector4 colorVector = new Vector4(1,1,1,1);
 
-            GL.EnableVertexAttribArray(colorLocation);
-            GL.Uniform4(colorLocation, colorVector);
+         //   GL.EnableVertexAttribArray(colorLocation);
+        //    GL.Uniform4(colorLocation, colorVector);
 
             solarSystem = new SolarSystem();
 
@@ -76,9 +76,9 @@ namespace SolarSystemSimulation
 
         void LoadObj()
         {
-            ObjParser objParser = new ObjParser("../../../blender/test.obj");
-            _meshes.Add(objParser.GetMech());
-
+            ObjParser objParser = new ObjParser("../../../blender/sun.obj");
+            Mesh mesh = objParser.GetMech();
+            _meshes.Add(mesh);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -98,7 +98,7 @@ namespace SolarSystemSimulation
             foreach (var mesh in _meshes)
             {
                 _shader.SetVector3("position", new Vector3(0,0,0));
-                _shader.SetVector4("Scolor", new Vector4(1,1,1,1));
+                //_shader.SetVector4("Scolor", new Vector4(1,1,1,1));
                 mesh.DrawMesh(_shader);
             }
 

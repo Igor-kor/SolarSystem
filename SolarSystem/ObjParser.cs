@@ -14,6 +14,7 @@ namespace SolarSystem
     {
         // Загрузка файла .obj
         string[] lines;
+        string texture;
 
         // Массивы вершин, нормалей и текстурных координат
         List<float> vertices = new List<float>();
@@ -25,6 +26,7 @@ namespace SolarSystem
 
         public ObjParser(string filename)
         {
+            Console.WriteLine("Load Obj " + filename);
             lines = File.ReadAllLines(filename);
             FileParse();
             // BindParseData();
@@ -32,7 +34,7 @@ namespace SolarSystem
 
         public Mesh GetMech()
         {
-            Mesh mesh = new Mesh(vertices, normals, texCoords, indices);
+            Mesh mesh = new Mesh(vertices, normals, texCoords, indices, texture);
 
             return mesh;
         }
@@ -80,6 +82,12 @@ namespace SolarSystem
                             indices.Add(int.Parse(vertexData[0]) - 1);
                         }
                     }
+                } else if (line.StartsWith("mtllib "))
+                {
+                    // Разбиение строки на элементы и добавление в массив индексов
+                    string[] elements = line.Split(' ');
+                    mtlParser mtlParser = new mtlParser("../../../blender/" + elements[1]);
+                    texture = mtlParser.GettexturePath();
                 }
             }
         }

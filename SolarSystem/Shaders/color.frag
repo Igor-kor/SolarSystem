@@ -1,11 +1,14 @@
-﻿#version 330 core
+﻿#version 330
 
-out vec4 pixelColor;
-uniform vec4 Scolor;
+uniform samplerBuffer tex; // TBO
+
+in vec2 TexCoord;
+
+out vec4 FragColor;
 
 void main()
 {
-   // outputColor = Scolor;
-   pixelColor = Scolor;
-   //diffuseColor = Scolor;
+    int index = int(TexCoord.x * 1024.0); 
+    vec4 color = texelFetch(tex, index);
+    FragColor = color; 
 }

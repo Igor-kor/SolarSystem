@@ -16,7 +16,7 @@ namespace SolarSystemSimulation
         private int vertexCount;
         private int indexCount;
         Vector3 position;
-        Color color;
+        System.Drawing.Color color;
         Vector4 colorVector;
         float speed;
         float radius;
@@ -123,7 +123,7 @@ namespace SolarSystemSimulation
             GL.DeleteBuffer(vbo);
             GL.DeleteBuffer(ebo);
         }
-        public void CreateSphere(float _radius, int slices, int stacks, Vector3 _position, Color _color, float _speed)
+        public void CreateSphere(float _radius, int slices, int stacks, Vector3 _position, System.Drawing.Color _color, float _speed)
         {
             speed = _speed;
             position = _position;

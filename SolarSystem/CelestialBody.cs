@@ -8,11 +8,11 @@ namespace SolarSystemSimulation
     {
         public Vector3 Position { get; set; }
         public float Radius { get; set; }
-        public Color Color { get; set; }
+        public System.Drawing.Color Color { get; set; }
         private MeshSphere mesh = new MeshSphere();
         //Shader _shader;
 
-        public CelestialBody(Vector3 position, float radius, Color color, float speed)
+        public CelestialBody(Vector3 position, float radius, System.Drawing.Color color, float speed)
         {
             Position = position;
             Radius = radius;
