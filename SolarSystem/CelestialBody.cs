@@ -9,7 +9,7 @@ namespace SolarSystemSimulation
         public Vector3 Position { get; set; }
         public float Radius { get; set; }
         public Color Color { get; set; }
-        private Mesh mesh = new Mesh();
+        private MeshSphere mesh = new MeshSphere();
         //Shader _shader;
 
         public CelestialBody(Vector3 position, float radius, Color color, float speed)

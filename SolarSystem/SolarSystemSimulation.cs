@@ -3,6 +3,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using SolarSystem;
 using System.Drawing;
 
 namespace SolarSystemSimulation
@@ -20,6 +21,8 @@ namespace SolarSystemSimulation
         private double _time;
         private Shader _shader;
 
+        private List<Mesh> _meshes;
+
         public SolarSystemSimulation(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title })
         {
             
@@ -28,12 +31,14 @@ namespace SolarSystemSimulation
         protected override void OnLoad()
         {
             base.OnLoad();
+            _meshes = new List<Mesh>();
+            LoadObj();
 
             GL.ClearColor(Color.Black);
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
             //_camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
-            _camera = new Camera(new Vector3(0, 0, -200), Size.X / (float)Size.Y);
+            _camera = new Camera(new Vector3(0, 0, 10), Size.X / (float)Size.Y);
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorState = CursorState.Grabbed;
@@ -42,16 +47,37 @@ namespace SolarSystemSimulation
 
             _shader = new Shader("Shaders/shader.vert", "Shaders/color.frag");
             _shader.Use();
+            //***********************************************************************
+            // Set the position uniform
+            int positionLocation = _shader.GetAttribLocation("position");
+
+            GL.EnableVertexAttribArray(positionLocation);
+            GL.Uniform3(positionLocation, new Vector3(0,0,0));
+
+            int colorLocation = _shader.GetAttribLocation("Scolor");
+            Vector4 colorVector = new Vector4(1,1,1,1);
+
+            GL.EnableVertexAttribArray(colorLocation);
+            GL.Uniform4(colorLocation, colorVector);
+
             solarSystem = new SolarSystem();
 
             var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
             GL.EnableVertexAttribArray(vertexLocation);
+            //*************************************************************************
 
             /*var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(texCoordLocation);  */
             
+
+        }
+
+        void LoadObj()
+        {
+            ObjParser objParser = new ObjParser("../../../blender/test.obj");
+            _meshes.Add(objParser.GetMech());
 
         }
 
@@ -69,6 +95,12 @@ namespace SolarSystemSimulation
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
             solarSystem.Draw();
+            foreach (var mesh in _meshes)
+            {
+                _shader.SetVector3("position", new Vector3(0,0,0));
+                _shader.SetVector4("Scolor", new Vector4(1,1,1,1));
+                mesh.DrawMesh(_shader);
+            }
 
             SwapBuffers();
         }
