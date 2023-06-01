@@ -45,20 +45,21 @@ namespace SolarSystemSimulation
 
             
 
-            _shader = new Shader("../../../Shaders/mypositiion.vert", "../../../Shaders/color.frag");
+            _shader = new Shader("../../../Shaders/texture.vert", "../../../Shaders/texture.frag");
             _shader.Use();
+            
             //***********************************************************************
             // Set the position uniform
             int positionLocation = _shader.GetAttribLocation("position");
-
+            int textureSamplerLocation = _shader.GetAttribLocation("textureSampler");
             GL.EnableVertexAttribArray(positionLocation);
             GL.Uniform3(positionLocation, new Vector3(0,0,0));
+            GL.Uniform1(textureSamplerLocation, 0);
+            //  int colorLocation = _shader.GetAttribLocation("Scolor");
+            //   Vector4 colorVector = new Vector4(1,1,1,1);
 
-          //  int colorLocation = _shader.GetAttribLocation("Scolor");
-         //   Vector4 colorVector = new Vector4(1,1,1,1);
-
-         //   GL.EnableVertexAttribArray(colorLocation);
-        //    GL.Uniform4(colorLocation, colorVector);
+            //   GL.EnableVertexAttribArray(colorLocation);
+            //    GL.Uniform4(colorLocation, colorVector);
 
             solarSystem = new SolarSystem();
 
