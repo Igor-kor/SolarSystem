@@ -35,6 +35,12 @@ namespace SolarSystemSimulation
             _meshes = new List<Mesh>();
             LoadObj();
             GL.Enable(EnableCap.DepthTest);
+
+          /*  GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.TextureGenS);
+            GL.Enable(EnableCap.TextureGenT);*/
+
+
             GL.ClearColor(System.Drawing.Color.Black);
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.

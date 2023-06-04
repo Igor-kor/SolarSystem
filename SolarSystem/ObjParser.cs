@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using System.IO;
 using OpenTK.Graphics.OpenGL;
 using System.Globalization;
+using OpenTK.Mathematics;
 
 namespace SolarSystem
 {
@@ -19,7 +20,6 @@ namespace SolarSystem
         // Массивы вершин, нормалей и текстурных координат
         List<float> vertices = new List<float>();
         List<float> normals = new List<float>();
-        List<float> texCoordstemp = new List<float>();
         List<float> texCoords = new List<float>();
 
         // Массив индексов
@@ -28,6 +28,11 @@ namespace SolarSystem
         List<int> vertexIndices = new List<int>();
         List<int> texCoordIndices = new List<int>();
         List<int> normalIndices = new List<int>();
+
+        List<float> newVertices = new List<float>();
+        List<float> newNormals = new List<float>();
+        List<float> newTexCoords = new List<float>();
+        List<int> newIndices = new List<int>();
 
         public ObjParser(string filename)
         {
@@ -38,7 +43,42 @@ namespace SolarSystem
 
         public Mesh GetMech( float semiMajorAxis, float eccentricity, float orbitalPeriod)
         {
-            Mesh mesh = new Mesh(vertices, normals, texCoords, indices, texture, semiMajorAxis, eccentricity, orbitalPeriod);
+            for (int i = 0; i < vertexIndices.Count; i++)
+            {
+                int vertexIndex = vertexIndices[i];
+                int texCoordIndex = texCoordIndices[i];
+                int normalIndex = normalIndices[i];
+
+                // Получение вершины, нормали и текстурной координаты по индексам
+                float vertexX = vertices[(vertexIndex ) * 3];
+                float vertexY = vertices[(vertexIndex ) * 3 + 1];
+                float vertexZ = vertices[(vertexIndex ) * 3 + 2];
+
+                float normalX = normals[(normalIndex ) * 3];
+                float normalY = normals[(normalIndex ) * 3 + 1];
+                float normalZ = normals[(normalIndex ) * 3 + 2];
+
+                float texCoordU = texCoords[(texCoordIndex ) * 2];
+                float texCoordV = texCoords[(texCoordIndex ) * 2 + 1];
+
+                // Добавление вершины, нормали и текстурной координаты в новые списки
+                newVertices.Add(vertexX);
+                newVertices.Add(vertexY);
+                newVertices.Add(vertexZ);
+
+                newNormals.Add(normalX);
+                newNormals.Add(normalY);
+                newNormals.Add(normalZ);
+
+                newTexCoords.Add(texCoordU);
+                newTexCoords.Add(texCoordV);
+
+                int newIndex = newVertices.Count / 3 - 1;
+
+                // Добавление индекса новой вершины
+                newIndices.Add(newIndex);
+            }
+            Mesh mesh = new Mesh(newVertices, normals, newTexCoords, newIndices, texCoordIndices, texture, semiMajorAxis, eccentricity, orbitalPeriod);
 
             return mesh;
         }
@@ -69,11 +109,12 @@ namespace SolarSystem
                 {
                     // Разбиение строки на элементы и добавление в массив текстурных координат
                     string[] elements = line.Split(' ');
-                 //   texCoordstemp.Add(float.Parse(elements[1], culture));
-                 //   texCoordstemp.Add(float.Parse(elements[2], culture));
-
-                    texCoords.Add(float.Parse(elements[1], culture));
-                    texCoords.Add(float.Parse(elements[2], culture));
+                    //   texCoordstemp.Add(float.Parse(elements[1], culture));
+                    //   texCoordstemp.Add(float.Parse(elements[2], culture));
+                    float x = float.Parse(elements[1], culture);
+                    float y = float.Parse(elements[2], culture);
+                    texCoords.Add(x);
+                    texCoords.Add(y);
                 }
                 else if (line.StartsWith("f "))
                 {
@@ -84,7 +125,7 @@ namespace SolarSystem
                     {
                         var vertexData = elements[i].Split('/');
                         vertexIndices.Add(int.Parse(vertexData[0]) - 1); // Индекс вершины
-                       // texCoordIndices.Add(int.Parse(vertexData[1]) - 1); // Индекс текстурной координаты
+                        texCoordIndices.Add(int.Parse(vertexData[1]) - 1); // Индекс текстурной координаты
                     //    texCoords.Add(texCoordstemp.ElementAt(int.Parse(vertexData[1]) - 1));
                    //     texCoords.Add(texCoordstemp.ElementAt(int.Parse(vertexData[1]) ));
                         normalIndices.Add(int.Parse(vertexData[2]) - 1); // Индекс нормали

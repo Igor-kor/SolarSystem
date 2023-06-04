@@ -24,6 +24,7 @@ namespace SolarSystem
 
         // Массив индексов
         List<int> indices = new List<int>();
+        List<int> texCoordIndices = new List<int>();
 
         int textureId = 0;
         string texture;
@@ -34,6 +35,7 @@ namespace SolarSystem
         private int nbo;
         private int tbo;
         private int ibo;
+        private int tboIndices;
 
         public Vector3 Position { get; set; }
         public float SemiMajorAxis { get; set; }
@@ -43,12 +45,13 @@ namespace SolarSystem
         private float currentAngle = 0.0f;
 
 
-        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices, string texture, float semiMajorAxis, float eccentricity, float orbitalPeriod)
+        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices, List<int> texCoordIndices, string texture, float semiMajorAxis, float eccentricity, float orbitalPeriod)
         {
             this.vertices = vertices;
             this.normals = normals;
             this.texCoords = texCoords;
             this.indices = indices;
+            this.texCoordIndices = texCoordIndices;
             this.texture = texture;
             SemiMajorAxis = semiMajorAxis;
             Eccentricity = eccentricity;
@@ -81,7 +84,7 @@ namespace SolarSystem
             GL.BufferData(BufferTarget.ArrayBuffer, normals.Count * sizeof(float), normals.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
-         
+
 
             // Создание VBO для текстурных координат
             GL.GenBuffers(1, out tbo);
@@ -89,7 +92,6 @@ namespace SolarSystem
             GL.BufferData(BufferTarget.ArrayBuffer, texCoords.Count * sizeof(float), texCoords.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(2);
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
-
 
             // Освобождение привязок VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -131,12 +133,12 @@ namespace SolarSystem
                  );
 
                 bitmap.UnlockBits(data);
-                //bitmap.Dispose();
+                bitmap.Dispose();
             }
 
             // Установка параметров фильтрации и повторения текстуры
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
            
@@ -187,37 +189,16 @@ namespace SolarSystem
 
         public void DrawMesh(Shader shader)
         {
-            BindTexture();
+           
             // Связывание VAO
             GL.BindVertexArray(vao);
 
-            // Связывание буфера индексов
-            // GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
-
-            //// Связывание буфера вершин с атрибутом позиции
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            //GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-            //GL.EnableVertexAttribArray(0);
-
-            //// Связывание буфера нормалей с атрибутом нормалей
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, nbo);
-            //GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
-            //GL.EnableVertexAttribArray(1);
-
-            //// Связывание буфера текстурных координат с атрибутом текстурных координат
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
-            //GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
-            //GL.EnableVertexAttribArray(2);
-
             // Рисование модели
+         //   GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
             GL.DrawElements(PrimitiveType.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
-
-            // Отключение атрибутов и связываний
-          /*  GL.DisableVertexAttribArray(0);
-            GL.DisableVertexAttribArray(1);
-            GL.DisableVertexAttribArray(2);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);*/
+            /*   GL.BindBuffer(BufferTarget.ElementArrayBuffer, tboIndices);
+               GL.DrawElements(PrimitiveType.Triangles, texCoordIndices.Count, DrawElementsType.UnsignedInt, 0);
+            */
             GL.BindVertexArray(0);
         }
 
