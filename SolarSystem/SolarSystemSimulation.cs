@@ -4,7 +4,9 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using SolarSystem;
+using System;
 using System.Drawing;
+using static OpenTK.Graphics.OpenGL.GL;
 
 namespace SolarSystemSimulation
 {
@@ -22,7 +24,6 @@ namespace SolarSystemSimulation
         private Shader _shader;
 
         private List<Mesh> _meshes;
-
         public SolarSystemSimulation(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title })
         {
             
@@ -33,8 +34,8 @@ namespace SolarSystemSimulation
             base.OnLoad();
             _meshes = new List<Mesh>();
             LoadObj();
-
-            GL.ClearColor(System.Drawing.Color.Red);
+            GL.Enable(EnableCap.DepthTest);
+            GL.ClearColor(System.Drawing.Color.Black);
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
             //_camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
@@ -77,9 +78,34 @@ namespace SolarSystemSimulation
 
         void LoadObj()
         {
-            ObjParser objParser = new ObjParser("../../../blender/sun.obj");
-            Mesh mesh = objParser.GetMech();
-            _meshes.Add(mesh);
+         /*   Mesh Sun = new ObjParser("../../../blender/sun.obj").GetMech(0.0f, 0.0f, 0.0f);
+            _meshes.Add(Sun);   */
+            Mesh mercury = new ObjParser("../../../blender/sun.obj").GetMech(0.3871f, 0.2056f, 87.97f);
+            _meshes.Add(mercury);
+            Mesh venus = new ObjParser("../../../blender/sun.obj").GetMech(0.7233f, 0.0068f, 224.7f); // Венера
+            _meshes.Add(venus);
+            Mesh earth = new ObjParser("../../../blender/sun.obj").GetMech(1.0f, 0.0167f, 365.25f);
+            _meshes.Add(earth);
+            Mesh mars = new ObjParser("../../../blender/sun.obj").GetMech(1.5237f, 0.0934f, 686.98f); // Марс
+            _meshes.Add(mars);
+            Mesh jupiter = new ObjParser("../../../blender/sun.obj").GetMech(5.2026f, 0.0484f, 4332.82f); // Юпитер
+            _meshes.Add(jupiter);
+            Mesh saturn = new ObjParser("../../../blender/sun.obj").GetMech(9.5388f, 0.0542f, 10755.7f); // Сатурн
+            _meshes.Add(saturn);
+            Mesh uranus = new ObjParser("../../../blender/sun.obj").GetMech(19.1914f, 0.0472f, 30687.15f); // Уран
+            _meshes.Add(uranus);
+            Mesh neptune = new ObjParser("../../../blender/sun.obj").GetMech(30.0611f, 0.0086f, 60190.03f); // Нептун
+            _meshes.Add(neptune);
+
+            // _meshes.Add(new ObjParser("../../../blender/test.obj").GetMech());
+        }
+
+        void UpdateObj()
+        {
+            foreach (var mesh in _meshes)
+            {
+                mesh.Update((float)_time* 10);
+            }
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -98,7 +124,7 @@ namespace SolarSystemSimulation
             solarSystem.Draw();
             foreach (var mesh in _meshes)
             {
-                _shader.SetVector3("position", new Vector3(0,0,0));
+                _shader.SetVector3("position", mesh.Position);
                 //_shader.SetVector4("Scolor", new Vector4(1,1,1,1));
                 mesh.DrawMesh(_shader);
             }
@@ -108,6 +134,7 @@ namespace SolarSystemSimulation
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+            UpdateObj();
 
             if (!IsFocused) // check to see if the window is focused
             {

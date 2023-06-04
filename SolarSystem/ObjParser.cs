@@ -19,22 +19,26 @@ namespace SolarSystem
         // Массивы вершин, нормалей и текстурных координат
         List<float> vertices = new List<float>();
         List<float> normals = new List<float>();
+        List<float> texCoordstemp = new List<float>();
         List<float> texCoords = new List<float>();
 
         // Массив индексов
         List<int> indices = new List<int>();
+
+        List<int> vertexIndices = new List<int>();
+        List<int> texCoordIndices = new List<int>();
+        List<int> normalIndices = new List<int>();
 
         public ObjParser(string filename)
         {
             Console.WriteLine("Load Obj " + filename);
             lines = File.ReadAllLines(filename);
             FileParse();
-            // BindParseData();
         }
 
-        public Mesh GetMech()
+        public Mesh GetMech( float semiMajorAxis, float eccentricity, float orbitalPeriod)
         {
-            Mesh mesh = new Mesh(vertices, normals, texCoords, indices, texture);
+            Mesh mesh = new Mesh(vertices, normals, texCoords, indices, texture, semiMajorAxis, eccentricity, orbitalPeriod);
 
             return mesh;
         }
@@ -65,6 +69,9 @@ namespace SolarSystem
                 {
                     // Разбиение строки на элементы и добавление в массив текстурных координат
                     string[] elements = line.Split(' ');
+                 //   texCoordstemp.Add(float.Parse(elements[1], culture));
+                 //   texCoordstemp.Add(float.Parse(elements[2], culture));
+
                     texCoords.Add(float.Parse(elements[1], culture));
                     texCoords.Add(float.Parse(elements[2], culture));
                 }
@@ -75,13 +82,20 @@ namespace SolarSystem
                   
                     for (int i = 1; i < elements.Length; i++)
                     {
-                        string[] faceElements = elements[i].Split('/');
-                        for (var k = 1; k <= 3; k++)
-                        {
-                            var vertexData = elements[k].Split('/');
-                            indices.Add(int.Parse(vertexData[0]) - 1);
-                        }
+                        var vertexData = elements[i].Split('/');
+                        vertexIndices.Add(int.Parse(vertexData[0]) - 1); // Индекс вершины
+                       // texCoordIndices.Add(int.Parse(vertexData[1]) - 1); // Индекс текстурной координаты
+                    //    texCoords.Add(texCoordstemp.ElementAt(int.Parse(vertexData[1]) - 1));
+                   //     texCoords.Add(texCoordstemp.ElementAt(int.Parse(vertexData[1]) ));
+                        normalIndices.Add(int.Parse(vertexData[2]) - 1); // Индекс нормали
                     }
+                    // Создание списка индексов (faces)
+                   /* for (int i = 0; i < vertexIndices.Count; i++)
+                    {
+                        indices.Add(vertexIndices[i]);
+                        indices.Add(texCoordIndices[i]);
+                        indices.Add(normalIndices[i]);
+                    }*/
                 } else if (line.StartsWith("mtllib "))
                 {
                     // Разбиение строки на элементы и добавление в массив индексов
@@ -90,6 +104,8 @@ namespace SolarSystem
                     texture = mtlParser.GettexturePath();
                 }
             }
+
+            indices = vertexIndices;
         }
     }
 }

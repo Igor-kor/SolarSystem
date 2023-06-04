@@ -11,6 +11,7 @@ using SolarSystemSimulation;
 //using SixLabors.ImageSharp.PixelFormats;
 using System.Drawing;
 using System.Drawing.Imaging;
+using OpenTK.Mathematics;
 
 namespace SolarSystem
 {
@@ -34,15 +35,24 @@ namespace SolarSystem
         private int tbo;
         private int ibo;
 
-        //  private int ebo;
+        public Vector3 Position { get; set; }
+        public float SemiMajorAxis { get; set; }
+        public float Eccentricity { get; set; }
+        public float OrbitalPeriod { get; set; }
 
-        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices, string texture)
+        private float currentAngle = 0.0f;
+
+
+        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices, string texture, float semiMajorAxis, float eccentricity, float orbitalPeriod)
         {
             this.vertices = vertices;
             this.normals = normals;
             this.texCoords = texCoords;
             this.indices = indices;
             this.texture = texture;
+            SemiMajorAxis = semiMajorAxis;
+            Eccentricity = eccentricity;
+            OrbitalPeriod = orbitalPeriod;
             BindParseData();
             LoadTexture("../../../blender/" + texture);
             BindTexture();
@@ -53,47 +63,51 @@ namespace SolarSystem
             GL.GenVertexArrays(1, out vao);
             // Bind the VAO
             GL.BindVertexArray(vao);
-
+            Console.WriteLine(vertices.Count);
+            Console.WriteLine(normals.Count);
+            Console.WriteLine(texCoords.Count);
+            Console.WriteLine(indices.Count);
             // Создание VBO для вершинных данных
             GL.GenBuffers(1, out vbo);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Count * 3 * sizeof(float), vertices.ToArray(), BufferUsageHint.StaticDraw);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Count * sizeof(float), vertices.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
+         
 
             // Создание VBO для нормалей
             GL.GenBuffers(1, out nbo);
             GL.BindBuffer(BufferTarget.ArrayBuffer, nbo);
             GL.BufferData(BufferTarget.ArrayBuffer, normals.Count * sizeof(float), normals.ToArray(), BufferUsageHint.StaticDraw);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
             GL.EnableVertexAttribArray(1);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
+         
 
             // Создание VBO для текстурных координат
             GL.GenBuffers(1, out tbo);
-            GL.BindBuffer(BufferTarget.TextureBuffer, tbo);
-            GL.BufferData(BufferTarget.TextureBuffer, texCoords.Count * sizeof(float), texCoords.ToArray(), BufferUsageHint.StaticDraw);
-            // GL.BufferData(BufferTarget.TextureBuffer, (IntPtr)(sizeof(float) * 4), IntPtr.Zero, BufferUsageHint.StaticDraw);
-            //GL.BindBuffer(BufferTarget.TextureBuffer, 0);
-            //  GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
-            //  GL.EnableVertexAttribArray(2);
- 
+            GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, texCoords.Count * sizeof(float), texCoords.ToArray(), BufferUsageHint.StaticDraw);
+            GL.EnableVertexAttribArray(2);
+            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
 
 
+            // Освобождение привязок VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 
-
+            // Создание EBO для индексов
             GL.GenBuffers(1, out ibo);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
 
-            // Unbind the VAO
+            // Освобождение привязок
             GL.BindVertexArray(0);
         }
 
         public int LoadTexture(string filePath)
         {
 
-            int textureID = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, textureID);
+            textureId = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, textureId);
 
             using (Image image = Image.FromFile(filePath))
             {
@@ -125,12 +139,13 @@ namespace SolarSystem
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+           
 
-            return textureID;
+            return textureId;
 
-            //Console.WriteLine("Load Texrure " + filename);
+            //Console.WriteLine("Load Texrure " + filePath);
             //GL.BindVertexArray(vao);
-            //using (var image = Image.Load<Rgba32>(filename))
+            //using (var image = Image.Load<Rgba32>(filePath))
             //{
             //    var texture = GL.GenTexture();
             //    GL.BindTexture(TextureTarget.Texture2D, texture);
@@ -166,56 +181,96 @@ namespace SolarSystem
         public void BindTexture()
         {
             // Установка текстуры (если используется)
-           // GL.ActiveTexture(TextureUnit.Texture0);
-         //   GL.BindTexture(TextureTarget.Texture2D, textureId);
+            GL.BindTexture(TextureTarget.Texture2D, textureId);
+            GL.ActiveTexture(TextureUnit.Texture0);
         }
 
         public void DrawMesh(Shader shader)
         {
+            BindTexture();
             // Связывание VAO
             GL.BindVertexArray(vao);
 
             // Связывание буфера индексов
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+            // GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
 
-            // Связывание буфера вершин с атрибутом позиции
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-          //  int positionLocation = GL.GetAttribLocation(shader.Handle, "aPosition");
-          //  GL.EnableVertexAttribArray(positionLocation);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-            //   GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
-            //  GL.EnableVertexAttribArray(0);
-            // Связывание буфера текстурных координат с атрибутом текстурных координат
+            //// Связывание буфера вершин с атрибутом позиции
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            //GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
+            //GL.EnableVertexAttribArray(0);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, nbo);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
-            GL.EnableVertexAttribArray(1);
+            //// Связывание буфера нормалей с атрибутом нормалей
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, nbo);
+            //GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
+            //GL.EnableVertexAttribArray(1);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
-            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
-            GL.EnableVertexAttribArray(2);
-
-            //  GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
-            // GL.ActiveTexture(TextureUnit.Texture0);
-            // GL.BindTexture(TextureTarget.Texture2D, textureId);
-            //  int textureLocation = GL.GetUniformLocation(shader.Handle, "tex");
-            // GL.Uniform1(textureLocation, 0);
-
+            //// Связывание буфера текстурных координат с атрибутом текстурных координат
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
+            //GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
+            //GL.EnableVertexAttribArray(2);
 
             // Рисование модели
-            GL.DrawElements(BeginMode.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
-
+            GL.DrawElements(PrimitiveType.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
 
             // Отключение атрибутов и связываний
-            //   GL.DisableVertexAttribArray(positionLocation);
-
-            //  GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-            GL.BindVertexArray(0);
-            GL.DisableVertexAttribArray(0);
+          /*  GL.DisableVertexAttribArray(0);
             GL.DisableVertexAttribArray(1);
             GL.DisableVertexAttribArray(2);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);*/
+            GL.BindVertexArray(0);
+        }
 
+
+      
+        public void Update(float elapsedTime)
+        {
+            // Расчет новой позиции объекта в соответствии с законами Кеплера
+            float meanAnomaly = (2.0f * (float)Math.PI / OrbitalPeriod) * elapsedTime;
+            float eccentricAnomaly = CalculateEccentricAnomaly(meanAnomaly);
+            currentAngle = CalculateTrueAnomaly(eccentricAnomaly);
+            Position = CalculatePosition(currentAngle);
+        }
+
+        private float CalculateEccentricAnomaly(float meanAnomaly)
+        {
+            // Расчет эксцентрической аномалии по средней аномалии и эксцентриситету
+
+            float eccentricAnomaly = meanAnomaly; // Начальное значение эксцентрической аномалии
+            float delta = 0.01f; // Погрешность вычислений
+
+            while (true)
+            {
+                float nextEccentricAnomaly = eccentricAnomaly - ((eccentricAnomaly - Eccentricity * (float)Math.Sin(eccentricAnomaly) - meanAnomaly) / (1.0f - Eccentricity * (float)Math.Cos(eccentricAnomaly)));
+
+                if (Math.Abs(nextEccentricAnomaly - eccentricAnomaly) < delta)
+                    break;
+
+                eccentricAnomaly = nextEccentricAnomaly;
+            }
+
+            return eccentricAnomaly;
+        }
+
+        private float CalculateTrueAnomaly(float eccentricAnomaly)
+        {
+            // Расчет истинной аномалии по эксцентрической аномалии
+
+            float trueAnomaly = 2.0f * (float)Math.Atan2(Math.Sqrt(1.0f + Eccentricity) * (float)Math.Sin(eccentricAnomaly / 2.0f), Math.Sqrt(1.0f - Eccentricity) * (float)Math.Cos(eccentricAnomaly / 2.0f));
+
+            return trueAnomaly;
+        }
+
+        private Vector3 CalculatePosition(float trueAnomaly)
+        {
+            // Расчет новой позиции объекта в трехмерном пространстве по истинной аномалии
+
+            float x = SemiMajorAxis * (float)Math.Cos(trueAnomaly);
+            float y = SemiMajorAxis * (float)Math.Sin(trueAnomaly);
+
+            Vector3 newPosition = new Vector3(x, y, 0.0f);
+
+            return newPosition;
         }
     }
 }
