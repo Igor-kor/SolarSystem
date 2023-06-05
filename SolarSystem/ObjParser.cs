@@ -41,7 +41,7 @@ namespace SolarSystem
             FileParse();
         }
 
-        public Mesh GetMech( float semiMajorAxis, float eccentricity, float orbitalPeriod)
+        public Mesh GetMesh()
         {
             for (int i = 0; i < vertexIndices.Count; i++)
             {
@@ -78,7 +78,7 @@ namespace SolarSystem
                 // Добавление индекса новой вершины
                 newIndices.Add(newIndex);
             }
-            Mesh mesh = new Mesh(newVertices, normals, newTexCoords, newIndices, texCoordIndices, texture, semiMajorAxis, eccentricity, orbitalPeriod);
+            Mesh mesh = new Mesh(newVertices, normals, newTexCoords, newIndices, texture);
 
             return mesh;
         }

@@ -22,8 +22,9 @@ namespace SolarSystemSimulation
         private Vector2 _lastPos;
         private double _time;
         private Shader _shader;
+        private Shader _shader2;
 
-        private List<Mesh> _meshes;
+        private List<InterfaceObject> ObjectsList;
         public SolarSystemSimulation(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title })
         {
             
@@ -32,7 +33,11 @@ namespace SolarSystemSimulation
         protected override void OnLoad()
         {
             base.OnLoad();
-            _meshes = new List<Mesh>();
+            ObjectsList = new List<InterfaceObject>();
+
+            _shader = new Shader("../../../Shaders/texture.vert", "../../../Shaders/texture.frag");
+            _shader2 = new Shader("../../../Shaders/texture.vert", "../../../Shaders/orbit.frag");
+            _shader.Use();
             LoadObj();
             GL.Enable(EnableCap.DepthTest);
 
@@ -41,7 +46,7 @@ namespace SolarSystemSimulation
             GL.Enable(EnableCap.TextureGenT);*/
 
 
-            GL.ClearColor(System.Drawing.Color.Black);
+            GL.ClearColor(Color.Aqua);
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
             //_camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
@@ -52,27 +57,25 @@ namespace SolarSystemSimulation
 
             
 
-            _shader = new Shader("../../../Shaders/texture.vert", "../../../Shaders/texture.frag");
-            _shader.Use();
             
             //***********************************************************************
             // Set the position uniform
-            int positionLocation = _shader.GetAttribLocation("position");
+           /* int positionLocation = _shader.GetAttribLocation("position");
             int textureSamplerLocation = _shader.GetAttribLocation("textureSampler");
             GL.EnableVertexAttribArray(positionLocation);
             GL.Uniform3(positionLocation, new Vector3(0,0,0));
-            GL.Uniform1(textureSamplerLocation, 0);
+            GL.Uniform1(textureSamplerLocation, 0);*/
             //  int colorLocation = _shader.GetAttribLocation("Scolor");
             //   Vector4 colorVector = new Vector4(1,1,1,1);
 
             //   GL.EnableVertexAttribArray(colorLocation);
             //    GL.Uniform4(colorLocation, colorVector);
 
-            solarSystem = new SolarSystem();
+           // solarSystem = new SolarSystem();
 
-            var vertexLocation = _shader.GetAttribLocation("aPosition");
+        /*    var vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(vertexLocation);
+            GL.EnableVertexAttribArray(vertexLocation);*/
             //*************************************************************************
 
             /*var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
@@ -84,33 +87,26 @@ namespace SolarSystemSimulation
 
         void LoadObj()
         {
-         /*   Mesh Sun = new ObjParser("../../../blender/sun.obj").GetMech(0.0f, 0.0f, 0.0f);
-            _meshes.Add(Sun);   */
-            Mesh mercury = new ObjParser("../../../blender/sun.obj").GetMech(0.3871f, 0.2056f, 87.97f);
-            _meshes.Add(mercury);
-            Mesh venus = new ObjParser("../../../blender/sun.obj").GetMech(0.7233f, 0.0068f, 224.7f); // Венера
-            _meshes.Add(venus);
-            Mesh earth = new ObjParser("../../../blender/sun.obj").GetMech(1.0f, 0.0167f, 365.25f);
-            _meshes.Add(earth);
-            Mesh mars = new ObjParser("../../../blender/sun.obj").GetMech(1.5237f, 0.0934f, 686.98f); // Марс
-            _meshes.Add(mars);
-            Mesh jupiter = new ObjParser("../../../blender/sun.obj").GetMech(5.2026f, 0.0484f, 4332.82f); // Юпитер
-            _meshes.Add(jupiter);
-            Mesh saturn = new ObjParser("../../../blender/sun.obj").GetMech(9.5388f, 0.0542f, 10755.7f); // Сатурн
-            _meshes.Add(saturn);
-            Mesh uranus = new ObjParser("../../../blender/sun.obj").GetMech(19.1914f, 0.0472f, 30687.15f); // Уран
-            _meshes.Add(uranus);
-            Mesh neptune = new ObjParser("../../../blender/sun.obj").GetMech(30.0611f, 0.0086f, 60190.03f); // Нептун
-            _meshes.Add(neptune);
+            /*   Mesh Sun = new ObjParser("../../../blender/sun.obj").GetMech(0.0f, 0.0f, 0.0f);
+               _meshes.Add(Sun);   */
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/mercury.obj").GetMesh(), 0.3871f, 0.2056f, 87.97f, 0.330f, 47.87f, 0.03f, 58.64f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/venus.obj").GetMesh(), 0.7233f, 0.0068f, 224.7f, 4.87f, 35.02f, 177.36f, -243.02f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/earth.obj").GetMesh(), 1.0f, 0.0167f, 365.25f, 5.97f, 29.78f, 23.44f, 24.0f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/mars.obj").GetMesh(), 1.5237f, 0.0934f, 686.98f, 0.642f, 24.07f, 25.19f, 24.62f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/jupiter.obj").GetMesh(), 5.2026f, 0.0484f, 4332.82f, 1898.0f, 13.07f, 3.12f, 9.93f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/saturn.obj").GetMesh(), 9.5388f, 0.0542f, 10755.7f, 568.0f, 9.69f, 26.73f, 10.66f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/uranus.obj").GetMesh(), 19.1914f, 0.0472f, 30687.15f, 86.8f, 6.81f, 97.77f, -17.24f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/neptune.obj").GetMesh(), 30.0611f, 0.0086f, 60190.03f, 102.0f, 5.43f, 28.32f, 16.11f));
+
 
             // _meshes.Add(new ObjParser("../../../blender/test.obj").GetMech());
         }
 
         void UpdateObj()
         {
-            foreach (var mesh in _meshes)
+            foreach (var mesh in ObjectsList)
             {
-                mesh.Update((float)_time* 10);
+                mesh.Update((float)_time*10);
             }
         }
 
@@ -122,17 +118,23 @@ namespace SolarSystemSimulation
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.LoadIdentity();
             var model = Matrix4.Identity;
-            _shader.Use();
-            _shader.SetMatrix4("model", model);
-            _shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
-            solarSystem.Draw();
-            foreach (var mesh in _meshes)
+
+            //solarSystem.Draw();
+            foreach (var objectel in ObjectsList)
             {
-                _shader.SetVector3("position", mesh.Position);
-                //_shader.SetVector4("Scolor", new Vector4(1,1,1,1));
-                mesh.DrawMesh(_shader);
+                _shader.Use();
+                _shader.SetMatrix4("view", _camera.GetViewMatrix());
+                _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
+                _shader.SetMatrix4("model", objectel.GetModelMatrix());
+                _shader.SetVector3("position", objectel.Position);
+                objectel.DrawMesh();
+                _shader2.Use();
+                _shader2.SetMatrix4("view", _camera.GetViewMatrix());
+                _shader2.SetMatrix4("projection", _camera.GetProjectionMatrix());
+                _shader2.SetMatrix4("model", model);
+                _shader2.SetVector3("position",  Vector3.Zero);
+                objectel.DrawOrbit();
             }
 
             SwapBuffers();
