@@ -52,18 +52,19 @@ namespace SolarSystem
             Position = CalculatePosition(0.0f);
             Rotation = Quaternion.Identity;
 
-            for (int i = 0; i < 360; i++)
+            int numPoints = 500; // Увеличьте на 1 для включения последней точки, чтобы замкнуть окружность
+            Vector3[] orbitPoints = new Vector3[numPoints];
+            int[] indices = new int[numPoints];
+
+            for (int i = 0; i < numPoints; i++)
             {
-                float angle = MathHelper.DegreesToRadians(i);
+                float angle = MathHelper.DegreesToRadians(i * 1080f / (numPoints - 1));
                 float x = SemiMajorAxis * (float)Math.Cos(angle);
                 float y = SemiMajorAxis * (float)Math.Sin(angle);
                 orbitPoints[i] = new Vector3(x, 0.0f, y);
-            }
-            int[] indices = new int[orbitPoints.Length];
-            for (int i = 0; i < orbitPoints.Length; i++)
-            {
                 indices[i] = i;
             }
+
             // Создание экземпляра OrbitRenderer
             orbitRenderer = new OrbitRenderer(orbitPoints, indices);
         }
