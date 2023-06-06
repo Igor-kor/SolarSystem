@@ -59,8 +59,13 @@ namespace SolarSystem
                 float y = SemiMajorAxis * (float)Math.Sin(angle);
                 orbitPoints[i] = new Vector3(x, 0.0f, y);
             }
+            int[] indices = new int[orbitPoints.Length];
+            for (int i = 0; i < orbitPoints.Length; i++)
+            {
+                indices[i] = i;
+            }
             // Создание экземпляра OrbitRenderer
-            orbitRenderer = new OrbitRenderer(orbitPoints);
+            orbitRenderer = new OrbitRenderer(orbitPoints, indices);
         }
         public void Update(float elapsedTime)
         {

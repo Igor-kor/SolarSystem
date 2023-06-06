@@ -8,6 +8,7 @@ using System;
 using System.Drawing;
 using static OpenTK.Graphics.OpenGL.GL;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using ErrorCode = OpenTK.Graphics.OpenGL.ErrorCode;
 
 namespace SolarSystemSimulation
 {
@@ -38,7 +39,7 @@ namespace SolarSystemSimulation
             ObjectsList = new List<InterfaceObject>();
 
             _shader = new Shader("../../../Shaders/texture.vert", "../../../Shaders/texture.frag");
-            _shader2 = new Shader("../../../Shaders/texture.vert", "../../../Shaders/orbit.frag");
+            _shader2 = new Shader("../../../Shaders/orbit.vert", "../../../Shaders/orbit.frag");
             _shader.Use();
             LoadObj();
             GL.Enable(EnableCap.DepthTest);
@@ -121,6 +122,9 @@ namespace SolarSystemSimulation
             GL.LoadIdentity();
             var model = Matrix4.Identity;
 
+            // Очищаем ошибки OpenGL перед отрисовкой
+            GL.GetError();
+
             _shader.Use();
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
@@ -137,12 +141,19 @@ namespace SolarSystemSimulation
                 _shader.SetMatrix4("model", objectel.GetModelMatrix());
              //   _shader.SetVector3("position", objectel.Position);
                 objectel.DrawMesh();
-             /*   _shader2.Use();
+                _shader2.Use();
                 _shader2.SetMatrix4("view", _camera.GetViewMatrix());
                 _shader2.SetMatrix4("projection", _camera.GetProjectionMatrix());
                 _shader2.SetMatrix4("model", model);
-                _shader2.SetVector3("position",  Vector3.Zero);
-                objectel.DrawOrbit();*/
+               // _shader2.SetVector3("position",  Vector3.Zero);
+                objectel.DrawOrbit();
+            }
+
+            // Проверяем наличие ошибок OpenGL после отрисовки
+            var error = GL.GetError();
+            if (error != ErrorCode.NoError)
+            {
+                Console.WriteLine($"OpenGL ошибка: {error}");
             }
 
             SwapBuffers();

@@ -6,36 +6,53 @@ using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
+using static OpenTK.Graphics.OpenGL.GL;
 
 namespace SolarSystem
 {
     internal class OrbitRenderer
     {
-        private Vector3[] _orbitPoints;
-        private int _vbo;
+        private Vector3[] orbitPoints;
+        private int vbo;
+        private int vao;
+        private int ebo; // Индексный буфер
+        private int[] indices;
 
-        public OrbitRenderer(Vector3[] orbitPoints)
+        public OrbitRenderer(Vector3[] _orbitPoints, int[] _indices)
         {
-            _orbitPoints = orbitPoints;
+            orbitPoints = _orbitPoints;
+            indices = _indices;
 
-            // Создаем буфер вершин и загружаем в него точки орбиты
-            _vbo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, _orbitPoints.Length * Vector3.SizeInBytes, _orbitPoints, BufferUsageHint.StaticDraw);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.GenVertexArrays(1, out vao);
+            GL.GenBuffers(1, out vbo);
+            GL.GenBuffers(1, out ebo);
+            // Bind the VAO
+            GL.BindVertexArray(vao);
+
+            // Bind the VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, orbitPoints.Length * sizeof(float), orbitPoints, BufferUsageHint.DynamicDraw);
+
+            // Bind the EBO
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.DynamicDraw);
+
+            // Set the vertex attributes
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(0);
+
+            // Unbind the VAO
+            GL.BindVertexArray(0);
         }
 
         public void Render()
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.EnableClientState(ArrayCap.VertexArray);
-            GL.VertexPointer(3, VertexPointerType.Float, 0, IntPtr.Zero);
-
-            // Рисуем линии между точками орбиты
-            GL.DrawArrays(PrimitiveType.LineStrip, 0, _orbitPoints.Length);
-
-            GL.DisableClientState(ArrayCap.VertexArray);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            // Bind the VAO
+            GL.BindVertexArray(vao);
+            // Draw the mesh
+            GL.DrawElements(BeginMode.Lines, indices.Length, DrawElementsType.UnsignedInt, 0);
+            // Unbind the VAO
+            GL.BindVertexArray(0);
         }
     }
 }
