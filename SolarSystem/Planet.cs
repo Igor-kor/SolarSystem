@@ -33,7 +33,7 @@ namespace SolarSystem
         float axialTilt;
         float rotationPeriod = 24.0f; // Earth's rotation period (in hours)
 
-        public Planet(Mesh mesh, float semiMajorAxis, float eccentricity, float orbitalPeriod, float mass, float velocity, float axialTilt, float rotationPeriod, float _axialTilt, float _rotationPeriod) 
+        public Planet(Mesh mesh, float semiMajorAxis, float eccentricity, float orbitalPeriod, float mass, float velocity, float _axialTilt, float _rotationPeriod) 
           
         {
             Mesh = mesh;
@@ -43,7 +43,7 @@ namespace SolarSystem
             Mass = mass;
             Velocity = velocity;
             AxialTilt = axialTilt;
-            RotationPeriod = rotationPeriod;
+            RotationPeriod = _rotationPeriod;
             axialTilt = _axialTilt;
             rotationPeriod = _rotationPeriod;
 
