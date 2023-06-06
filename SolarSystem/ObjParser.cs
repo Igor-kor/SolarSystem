@@ -109,8 +109,6 @@ namespace SolarSystem
                 {
                     // Разбиение строки на элементы и добавление в массив текстурных координат
                     string[] elements = line.Split(' ');
-                    //   texCoordstemp.Add(float.Parse(elements[1], culture));
-                    //   texCoordstemp.Add(float.Parse(elements[2], culture));
                     float x = float.Parse(elements[1], culture);
                     float y = float.Parse(elements[2], culture);
                     texCoords.Add(x);
@@ -126,17 +124,8 @@ namespace SolarSystem
                         var vertexData = elements[i].Split('/');
                         vertexIndices.Add(int.Parse(vertexData[0]) - 1); // Индекс вершины
                         texCoordIndices.Add(int.Parse(vertexData[1]) - 1); // Индекс текстурной координаты
-                    //    texCoords.Add(texCoordstemp.ElementAt(int.Parse(vertexData[1]) - 1));
-                   //     texCoords.Add(texCoordstemp.ElementAt(int.Parse(vertexData[1]) ));
                         normalIndices.Add(int.Parse(vertexData[2]) - 1); // Индекс нормали
                     }
-                    // Создание списка индексов (faces)
-                   /* for (int i = 0; i < vertexIndices.Count; i++)
-                    {
-                        indices.Add(vertexIndices[i]);
-                        indices.Add(texCoordIndices[i]);
-                        indices.Add(normalIndices[i]);
-                    }*/
                 } else if (line.StartsWith("mtllib "))
                 {
                     // Разбиение строки на элементы и добавление в массив индексов

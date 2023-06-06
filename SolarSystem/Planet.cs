@@ -148,7 +148,6 @@ namespace SolarSystem
 
         public Matrix4 GetModelMatrix()
         {
-           
             Matrix4 translationMatrix = Matrix4.CreateTranslation(Position);
             Matrix4 rotationMatrix = Matrix4.CreateFromQuaternion(Rotation);
             return rotationMatrix * translationMatrix;

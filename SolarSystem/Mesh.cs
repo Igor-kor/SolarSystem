@@ -7,8 +7,6 @@ using System.IO;
 using OpenTK.Graphics.OpenGL;
 using static OpenTK.Graphics.OpenGL.GL;
 using SolarSystemSimulation;
-//using SixLabors.ImageSharp;
-//using SixLabors.ImageSharp.PixelFormats;
 using System.Drawing;
 using System.Drawing.Imaging;
 using OpenTK.Mathematics;
@@ -130,8 +128,6 @@ namespace SolarSystem
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
             return textureId;
         }
-
-
         public void BindTexture()
         {
             // Установка текстуры (если используется)
@@ -151,13 +147,10 @@ namespace SolarSystem
             GL.BindVertexArray(0);
         }
 
-
-      
         public void Update(float elapsedTime)
         {
            //
         }
-
      
     }
 }
