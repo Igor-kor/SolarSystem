@@ -1,111 +1,156 @@
-﻿using OpenTK.Graphics.OpenGL;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using OpenTK.Graphics.OpenGL;
+using static OpenTK.Graphics.OpenGL.GL;
+using SolarSystemSimulation;
+using System.Drawing;
+using System.Drawing.Imaging;
 using OpenTK.Mathematics;
 
-namespace SolarSystemSimulation
+namespace SolarSystem
 {
-    public class Mesh
+    internal class Mesh
     {
+        // Массивы вершин, нормалей и текстурных координат
+        List<float> vertices = new List<float>();
+        List<float> normals = new List<float>();
+        List<float> texCoords = new List<float>();
+
+        // Массив индексов
+        List<int> indices = new List<int>();
+
+        int textureId = 0;
+        string texture;
+
         private int vao;
+
         private int vbo;
-        private int ebo;
-        private int vertexCount;
-        private int indexCount;
+        private int nbo;
+        private int tbo;
+        private int ibo;
 
-        public void Create(float[] vertices, int[] indices)
+
+        public Mesh(List<float> vertices, List<float> normals, List<float> texCoords, List<int> indices, string texture)
         {
-            // Generate the VAO, VBO, and EBO
+            this.vertices = vertices;
+            this.normals = normals;
+            this.texCoords = texCoords;
+            this.indices = indices;
+            this.texture = texture;
+            BindParseData();
+            LoadTexture("../../../blender/" + texture);
+            BindTexture();
+        }
+
+        void BindParseData()
+        {
             GL.GenVertexArrays(1, out vao);
+            // Bind the VAO
+            GL.BindVertexArray(vao);
+            Console.WriteLine(vertices.Count);
+            Console.WriteLine(normals.Count);
+            Console.WriteLine(texCoords.Count);
+            Console.WriteLine(indices.Count);
+            // Создание VBO для вершинных данных
             GL.GenBuffers(1, out vbo);
-            GL.GenBuffers(1, out ebo);
-
-            // Bind the VAO
-            GL.BindVertexArray(vao);
-
-            // Bind the VBO
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.DynamicDraw);
-
-            // Bind the EBO
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(int), indices, BufferUsageHint.DynamicDraw);
-
-            // Set the vertex attributes
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Count * sizeof(float), vertices.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, 0);
+         
 
-            // Unbind the VAO
+            // Создание VBO для нормалей
+            GL.GenBuffers(1, out nbo);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, nbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, normals.Count * sizeof(float), normals.ToArray(), BufferUsageHint.StaticDraw);
+            GL.EnableVertexAttribArray(1);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, 0);
+
+
+            // Создание VBO для текстурных координат
+            GL.GenBuffers(1, out tbo);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, tbo);
+            GL.BufferData(BufferTarget.ArrayBuffer, texCoords.Count * sizeof(float), texCoords.ToArray(), BufferUsageHint.StaticDraw);
+            GL.EnableVertexAttribArray(2);
+            GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, 0, 0);
+
+            // Освобождение привязок VBO
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
+            // Создание EBO для индексов
+            GL.GenBuffers(1, out ibo);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ibo);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(int), indices.ToArray(), BufferUsageHint.StaticDraw);
+
+            // Освобождение привязок
             GL.BindVertexArray(0);
-
-            vertexCount = vertices.Length / 3;
-            indexCount = indices.Length;
         }
 
-        public void Render()
+        public int LoadTexture(string filePath)
         {
-            // Bind the VAO
-            GL.BindVertexArray(vao);
+
+            textureId = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, textureId);
+
+            using (Image image = Image.FromFile(filePath))
+            {
+                Bitmap bitmap = new Bitmap(image);
+                BitmapData data = bitmap.LockBits(
+                    new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                    ImageLockMode.ReadOnly,
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb
+                );
+
+                GL.TexImage2D(
+                    TextureTarget.Texture2D,
+                     0,
+                     PixelInternalFormat.Rgba,
+                     data.Width,
+                     data.Height,
+                     0,
+                     OpenTK.Graphics.OpenGL.PixelFormat.Bgra,
+                     PixelType.UnsignedByte,
+                     data.Scan0
+                 );
+
+                bitmap.UnlockBits(data);
+                bitmap.Dispose();
+            }
+
+            // Установка параметров фильтрации и повторения текстуры
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            return textureId;
+        }
+        public void BindTexture()
+        {
+            // Установка текстуры (если используется)
+            GL.BindTexture(TextureTarget.Texture2D, textureId);
+            GL.ActiveTexture(TextureUnit.Texture0);
+        }
+
+        public void DrawMesh()
+        {
            
-            // Draw the mesh
-            GL.DrawElements(BeginMode.LineStrip, indexCount, DrawElementsType.UnsignedInt, 0);
-
-            // Unbind the VAO
+            // Связывание VAO
+            GL.BindVertexArray(vao);
+            BindTexture();
+            // Рисование модели
+            GL.DrawElements(PrimitiveType.Triangles, indices.Count, DrawElementsType.UnsignedInt, 0);
+          
             GL.BindVertexArray(0);
         }
 
-        public void Dispose()
+        public void Update(float elapsedTime)
         {
-            GL.DeleteVertexArray(vao);
-            GL.DeleteBuffer(vbo);
-            GL.DeleteBuffer(ebo);
+           //
         }
-        public static Mesh CreateSphere(float radius, int slices, int stacks)
-        {
-            Mesh mesh = new Mesh();
-            List<float> vertices = new List<float>();
-            List<int> indices = new List<int>();
-
-            for (int j = 0; j <= stacks; j++)
-            {
-                float theta = j * MathF.PI / stacks; ;
-                float sinTheta = MathF.Sin(theta);
-                float cosTheta = MathF.Cos(theta);
-
-                for (int i = 0; i <= slices; i++)
-                {
-                    float phi = i * 2 * MathF.PI / slices;
-                    float sinPhi = MathF.Sin(phi);
-                    float cosPhi = MathF.Cos(phi);
-
-                    Vector3 vertex = new Vector3(cosPhi * sinTheta, cosTheta, sinPhi * sinTheta) * radius;
-                    vertices.Add( vertex.X);
-                    vertices.Add( vertex.Y);
-                    vertices.Add( vertex.Z);
-                }
-            }
-
-            for (int j = 0; j < stacks; j++)
-            {
-                for (int i = 0; i < slices; i++)
-                {
-                    int a = j * (slices + 1) + i;
-                    int b = a + 1;
-                    int c = (j + 1) * (slices + 1) + i;
-                    int d = c + 1;
-
-                    indices.Add(a);
-                    indices.Add(b);
-                    indices.Add(d);
-
-                    indices.Add(a);
-                    indices.Add(d);
-                    indices.Add(c);
-                }
-            }
-
-            mesh.Create(vertices.ToArray(), indices.ToArray());
-
-            return mesh;
-        }
+     
     }
 }
-
