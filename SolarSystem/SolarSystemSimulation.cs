@@ -89,14 +89,14 @@ namespace SolarSystemSimulation
         {
             /*   Mesh Sun = new ObjParser("../../../blender/sun.obj").GetMech(0.0f, 0.0f, 0.0f);
                _meshes.Add(Sun);   */
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/mercury.obj").GetMesh(), 0.3871f, 0.2056f, 87.97f, 0.330f, 47.87f, 0.03f, 58.64f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/venus.obj").GetMesh(), 0.7233f, 0.0068f, 224.7f, 4.87f, 35.02f, 177.36f, -243.02f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/earth.obj").GetMesh(), 1.0f, 0.0167f, 365.25f, 5.97f, 29.78f, 23.44f, 24.0f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/mars.obj").GetMesh(), 1.5237f, 0.0934f, 686.98f, 0.642f, 24.07f, 25.19f, 24.62f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/jupiter.obj").GetMesh(), 5.2026f, 0.0484f, 4332.82f, 1898.0f, 13.07f, 3.12f, 9.93f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/saturn.obj").GetMesh(), 9.5388f, 0.0542f, 10755.7f, 568.0f, 9.69f, 26.73f, 10.66f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/uranus.obj").GetMesh(), 19.1914f, 0.0472f, 30687.15f, 86.8f, 6.81f, 97.77f, -17.24f));
-            ObjectsList.Add(new Planet(new ObjParser("../../../blender/neptune.obj").GetMesh(), 30.0611f, 0.0086f, 60190.03f, 102.0f, 5.43f, 28.32f, 16.11f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/mercury.obj").GetMesh(), 0.3871f, 0.2056f, 87.97f, 0.330f, 47.87f, 0.03f, 58.64f, 0.03f, 58.6f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/venus.obj").GetMesh(), 0.7233f, 0.0068f, 224.7f, 4.87f, 35.02f, 177.36f, -243.02f, 177.4f, 243.0f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/earth.obj").GetMesh(), 1.0f, 0.0167f, 365.25f, 5.97f, 29.78f, 23.44f, 24.0f, 23.5f, 24.0f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/mars.obj").GetMesh(), 1.5237f, 0.0934f, 686.98f, 0.642f, 24.07f, 25.19f, 24.62f, 25.2f, 24.6f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/jupiter.obj").GetMesh(), 5.2026f, 0.0484f, 4332.82f, 1898.0f, 13.07f, 3.12f, 9.93f, 3.1f, 9.9f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/saturn.obj").GetMesh(), 9.5388f, 0.0542f, 10755.7f, 568.0f, 9.69f, 26.73f, 10.66f, 26.7f, 10.7f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/uranus.obj").GetMesh(), 19.1914f, 0.0472f, 30687.15f, 86.8f, 6.81f, 97.77f, -17.24f, 97.8f, 17.2f));
+            ObjectsList.Add(new Planet(new ObjParser("../../../blender/neptune.obj").GetMesh(), 30.0611f, 0.0086f, 60190.03f, 102.0f, 5.43f, 28.32f, 16.11f, 28.3f, 16.1f));
 
 
             // _meshes.Add(new ObjParser("../../../blender/test.obj").GetMech());
@@ -113,7 +113,7 @@ namespace SolarSystemSimulation
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-            _time += 4.0 * e.Time;
+            _time += 1.0 * e.Time;
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.LoadIdentity();
@@ -126,15 +126,16 @@ namespace SolarSystemSimulation
                 _shader.Use();
                 _shader.SetMatrix4("view", _camera.GetViewMatrix());
                 _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
+              //  _shader.SetMatrix4("model", model);
                 _shader.SetMatrix4("model", objectel.GetModelMatrix());
-                _shader.SetVector3("position", objectel.Position);
+             //   _shader.SetVector3("position", objectel.Position);
                 objectel.DrawMesh();
-                _shader2.Use();
+             /*   _shader2.Use();
                 _shader2.SetMatrix4("view", _camera.GetViewMatrix());
                 _shader2.SetMatrix4("projection", _camera.GetProjectionMatrix());
                 _shader2.SetMatrix4("model", model);
                 _shader2.SetVector3("position",  Vector3.Zero);
-                objectel.DrawOrbit();
+                objectel.DrawOrbit();*/
             }
 
             SwapBuffers();

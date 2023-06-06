@@ -30,7 +30,10 @@ namespace SolarSystem
         public float AxialTilt { get; set; }
         public float RotationPeriod { get; set; }
 
-        public Planet(Mesh mesh, float semiMajorAxis, float eccentricity, float orbitalPeriod, float mass, float velocity, float axialTilt, float rotationPeriod) 
+        float axialTilt;
+        float rotationPeriod = 24.0f; // Earth's rotation period (in hours)
+
+        public Planet(Mesh mesh, float semiMajorAxis, float eccentricity, float orbitalPeriod, float mass, float velocity, float axialTilt, float rotationPeriod, float _axialTilt, float _rotationPeriod) 
           
         {
             Mesh = mesh;
@@ -41,6 +44,8 @@ namespace SolarSystem
             Velocity = velocity;
             AxialTilt = axialTilt;
             RotationPeriod = rotationPeriod;
+            axialTilt = _axialTilt;
+            rotationPeriod = _rotationPeriod;
 
 
             // Calculate initial position and rotation
@@ -110,9 +115,6 @@ namespace SolarSystem
 
         private Quaternion CalculateRotation(float elapsedTime)
         {
-            // Calculate axial tilt and rotation based on elapsed time
-            float axialTilt = 23.5f; // Earth's axial tilt (in degrees)
-            float rotationPeriod = 24.0f; // Earth's rotation period (in hours)
 
             // Calculate axial tilt and rotation based on elapsed time
             float rotationAngle = (360.0f / rotationPeriod) * elapsedTime;
@@ -140,9 +142,10 @@ namespace SolarSystem
 
         public Matrix4 GetModelMatrix()
         {
+           
             Matrix4 translationMatrix = Matrix4.CreateTranslation(Position);
             Matrix4 rotationMatrix = Matrix4.CreateFromQuaternion(Rotation);
-            return translationMatrix * rotationMatrix;
+            return rotationMatrix * translationMatrix;
         }
 
         public Vector3 CalculateGravityForce(Vector3 sunPosition)

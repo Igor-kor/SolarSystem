@@ -8,12 +8,11 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 position;
 
 out vec2 fragTexCoord;
 
 void main()
 {
-    gl_Position = vec4( position + aPosition, 1.0) * model * view * projection;
+    gl_Position = vec4( aPosition, 1.0) * model * view * projection;
     fragTexCoord = texCoord;
 }
