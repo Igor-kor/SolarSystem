@@ -8,4 +8,4 @@
 - Упращенный расчет орбит и движение планет вокруг солнца, с отрисовкой орбит
 - Скайбокс
 
-![image screenshot1](./img/screenshot1.jpg
+![Image](/img/screenshot1.jpg
