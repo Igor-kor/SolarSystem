@@ -43,7 +43,7 @@ namespace SolarSystem
             Mass = mass;
             Velocity = velocity;
             AxialTilt = axialTilt;
-            RotationPeriod = _rotationPeriod;
+            RotationPeriod = _rotationPeriod ;
             axialTilt = _axialTilt;
             rotationPeriod = _rotationPeriod;
 
